@@ -34,11 +34,6 @@ if [ "$TRAVIS_RUST_VERSION" == "stable" ] || [ "$TRAVIS_RUST_VERSION" == "beta" 
         cargo test --features pkcs12_rc2 --target $TARGET
         cargo test --features dsa --target $TARGET
 
-        # If zlib is installed, test the zlib feature
-        if [ -n "$ZLIB_INSTALLED" ]; then
-            cargo test --features zlib --target $TARGET
-        fi
-
         # If AES-NI is supported, test the feature
         if [ -n "$AES_NI_SUPPORT" ]; then
             cargo test --features force_aesni_support --target $TARGET

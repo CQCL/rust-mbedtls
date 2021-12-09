@@ -42,7 +42,7 @@ quote = "1.0.9"
 # * strstr/strlen/strncpy/strncmp/strcmp/snprintf
 # * memmove/memcpy/memcmp/memset
 # * rand/printf (used only for self tests. optionally use custom_printf)
-default = ["std", "debug", "threading", "zlib", "time", "aesni", "padlock", "legacy_protocols"]
+default = ["std", "debug", "threading", "time", "aesni", "padlock", "legacy_protocols"]
 std = ["debug"] # deprecated automatic enabling of debug, can be removed on major version bump
 debug = []
 custom_printf = []
@@ -51,7 +51,6 @@ aes_alt = []
 threading = []
 time = []
 havege = ["time"]
-zlib = ["libz-sys"]
 pkcs11 = []
 aesni = []
 padlock = []

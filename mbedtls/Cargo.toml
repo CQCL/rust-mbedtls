@@ -62,7 +62,6 @@ force_aesni_support = ["mbedtls-sys-auto/custom_has_support", "mbedtls-sys-auto/
 mpi_force_c_code = ["mbedtls-sys-auto/mpi_force_c_code"]
 rdrand = []
 aesni = ["mbedtls-sys-auto/aesni"]
-zlib = ["mbedtls-sys-auto/zlib"]
 time = ["mbedtls-sys-auto/time"]
 padlock = ["mbedtls-sys-auto/padlock"]
 dsa = ["std", "yasna", "num-bigint", "bit-vec"]

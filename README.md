@@ -125,7 +125,6 @@ This is a list of the Cargo features available for mbedtls-sys. Features in
            `mbedtls_platform_gmtime_r(const long long*, struct tm*)` and
            `mbedtls_time(long long*)`.
 * *trusted_cert_callback* Enable trusted certificate callback support.
-* **zlib** Enable zlib support.
 
 For the complete mapping of features to config.h defines, see
 [mbedtls-sys/build/config.rs]. PRs adding new features are encouraged.
