@@ -21,13 +21,15 @@ use crate::features::FEATURES;
  *      grep '^#include' *|grep -v '<'|grep -v MBEDTLS_|sed 's/:#include//;s/"//g'|sed 's#mbedtls/##g'| egrep -v ' (psa/crypto.h|psa/crypto_config.h|everest/everest.h|.*_alt.h)$'; \
  *       ls *.h|awk '{print $1 " " $1}' \
  *  )|tsort|tac| \
- *  egrep -v '^(compat-1.3.h|certs.h|config.h|check_config.h)$' \
+ *  egrep -v '^(compat-2.x.h|certs.h|mbedtls_config.h|check_config.h)$' \
  * )
  */
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "config_psa.h"),
+    (None,                 "private_access.h"),
+    (None,                 "build_info.h"),
     (None,                 "bignum.h"),
     (None,                 "md.h"),
     (Some("threading"),    "threading.h"),
@@ -41,22 +43,18 @@ pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "x509.h"),
     (None,                 "cipher.h"),
     (None,                 "x509_crl.h"),
-    (None,                 "aes.h"),
     (None,                 "ssl_ciphersuites.h"),
     (None,                 "x509_crt.h"),
     (None,                 "dhm.h"),
     (None,                 "ecdh.h"),
+    (None,                 "aes.h"),
+    (None,                 "ssl.h"),
     (None,                 "oid.h"),
+    (None,                 "error.h"),
     (None,                 "ctr_drbg.h"),
     (None,                 "hmac_drbg.h"),
-    (None,                 "ssl.h"),
-    (None,                 "md5.h"),
-    (None,                 "sha1.h"),
-    (None,                 "sha256.h"),
     (None,                 "sha512.h"),
-    (None,                 "ecjpake.h"),
-    (None,                 "psa_util.h"),
-    (None,                 "net_sockets.h"),
+    (None,                 "sha256.h"),
     (None,                 "poly1305.h"),
     (None,                 "chacha20.h"),
     (None,                 "x509_csr.h"),
@@ -65,20 +63,24 @@ pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "ssl_ticket.h"),
     (None,                 "ssl_cookie.h"),
     (None,                 "ssl_cache.h"),
+    (None,                 "sha1.h"),
     (None,                 "ripemd160.h"),
+    (None,                 "psa_util.h"),
     (None,                 "platform.h"),
     (None,                 "pkcs5.h"),
     (None,                 "pkcs12.h"),
-    (Some("pkcs11"),       "pkcs11.h"),
     (None,                 "pem.h"),
     (None,                 "nist_kw.h"),
+    (None,                 "net_sockets.h"),
     (None,                 "memory_buffer_alloc.h"),
+    (None,                 "md5.h"),
     (None,                 "hkdf.h"),
     (None,                 "gcm.h"),
-    (None,                 "error.h"),
     (None,                 "entropy.h"),
+    (None,                 "ecjpake.h"),
     (None,                 "des.h"),
     (None,                 "debug.h"),
+    (None,                 "constant_time.h"),
     (None,                 "cmac.h"),
     (None,                 "chachapoly.h"),
     (None,                 "ccm.h"),
@@ -86,6 +88,7 @@ pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "base64.h"),
     (None,                 "asn1write.h"),
     (None,                 "aria.h"),
+    (Some("pkcs11"),       "pkcs11.h"),
 ];
 
 pub fn enabled_ordered() -> Box<dyn Iterator<Item = &'static str>> {
