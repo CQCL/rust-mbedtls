@@ -21,8 +21,6 @@ define!(
         Des = CIPHER_ID_DES,
         Des3 = CIPHER_ID_3DES,
         Camellia = CIPHER_ID_CAMELLIA,
-        Blowfish = CIPHER_ID_BLOWFISH,
-        Arc4 = CIPHER_ID_ARC4,
     }
 );
 
@@ -35,8 +33,6 @@ impl From<cipher_id_t> for CipherId {
             CIPHER_ID_DES => CipherId::Des,
             CIPHER_ID_3DES => CipherId::Des3,
             CIPHER_ID_CAMELLIA => CipherId::Camellia,
-            CIPHER_ID_BLOWFISH => CipherId::Blowfish,
-            CIPHER_ID_ARC4 => CipherId::Arc4,
             // This should be replaced with TryFrom once it is stable.
             _ => panic!("Invalid cipher_id_t"),
         }
@@ -122,11 +118,6 @@ define!(
         DesEdeCbc = CIPHER_DES_EDE_CBC,
         DesEde3Ecb = CIPHER_DES_EDE3_ECB,
         DesEde3Cbc = CIPHER_DES_EDE3_CBC,
-        BlowfishEcb = CIPHER_BLOWFISH_ECB,
-        BlowfishCbc = CIPHER_BLOWFISH_CBC,
-        BlowfishCfb64 = CIPHER_BLOWFISH_CFB64,
-        BlowfishCtr = CIPHER_BLOWFISH_CTR,
-        Arcfour128 = CIPHER_ARC4_128,
         Aes128Ccm = CIPHER_AES_128_CCM,
         Aes192Ccm = CIPHER_AES_192_CCM,
         Aes256Ccm = CIPHER_AES_256_CCM,
@@ -176,17 +167,13 @@ impl Cipher {
     // Setup routine - this should be the first function called
     // it combines several steps into one call here, they are
     // Cipher init, Cipher setup
-    pub fn setup(
-        cipher_id: CipherId,
-        cipher_mode: CipherMode,
-        key_bit_len: u32,
-    ) -> Result<Cipher> {
+    pub fn setup(cipher_id: CipherId, cipher_mode: CipherMode, key_bit_len: u32) -> Result<Cipher> {
         let mut ret = Self::init();
         unsafe {
             // Do setup with proper cipher_info based on algorithm, key length and mode
             cipher_setup(
                 &mut ret.inner,
-                cipher_info_from_values(cipher_id.into(), key_bit_len as i32, cipher_mode.into())
+                cipher_info_from_values(cipher_id.into(), key_bit_len as i32, cipher_mode.into()),
             )
             .into_result()?;
         }
@@ -242,7 +229,7 @@ impl Cipher {
                 indata.as_ptr(),
                 indata.len(),
                 outdata.as_mut_ptr(),
-                &mut olen
+                &mut olen,
             )
             .into_result()?;
         }
@@ -320,9 +307,11 @@ impl Cipher {
         cipher_and_tag: &mut [u8],
         tag_len: usize,
     ) -> Result<usize> {
-        if cipher_and_tag.len()
+        if cipher_and_tag
+            .len()
             .checked_sub(tag_len)
-            .map_or(true, |cipher_len| cipher_len < plain.len()) {
+            .map_or(true, |cipher_len| cipher_len < plain.len())
+        {
             return Err(Error::CipherBadInputData);
         }
 
@@ -357,10 +346,12 @@ impl Cipher {
         tag_len: usize,
     ) -> Result<usize> {
         // For AES KW and KWP cipher text length can be greater than plain text length
-        if self.is_authenticated() &&
-            cipher_and_tag.len()
+        if self.is_authenticated()
+            && cipher_and_tag
+                .len()
                 .checked_sub(tag_len)
-                .map_or(true, |cipher_len| plain.len() < cipher_len) {
+                .map_or(true, |cipher_len| plain.len() < cipher_len)
+        {
             return Err(Error::CipherBadInputData);
         }
 
@@ -416,12 +407,18 @@ impl Cipher {
         }
         self.reset()?;
         unsafe {
-            cipher_cmac(&*self.inner.cipher_info, key.as_ptr(), (key.len() * 8) as _, data.as_ptr(), data.len(), 
-                        outdata.as_mut_ptr()).into_result()?;
+            cipher_cmac(
+                &*self.inner.cipher_info,
+                key.as_ptr(),
+                (key.len() * 8) as _,
+                data.as_ptr(),
+                data.len(),
+                outdata.as_mut_ptr(),
+            )
+            .into_result()?;
         }
         Ok(())
     }
-
 }
 
 #[test]
@@ -453,7 +450,14 @@ fn one_part_ecb() {
 fn cmac_test() {
     let mut c = Cipher::setup(CipherId::Aes, CipherMode::ECB, 128).unwrap();
     let mut out = [0u8; 16];
-    c.cmac(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f",
-           b"\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff", &mut out).expect("Success in CMAC");
-    assert_eq!(&out, b"\x38\x7b\x36\x22\x8b\xa7\x77\x44\x5b\xaf\xa0\x36\x45\xb9\x40\x10");
+    c.cmac(
+        b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f",
+        b"\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff",
+        &mut out,
+    )
+    .expect("Success in CMAC");
+    assert_eq!(
+        &out,
+        b"\x38\x7b\x36\x22\x8b\xa7\x77\x44\x5b\xaf\xa0\x36\x45\xb9\x40\x10"
+    );
 }

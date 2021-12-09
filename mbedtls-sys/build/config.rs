@@ -379,6 +379,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_PLATFORM_ZEROIZE_ALT",                      Undefined),
     ("MBEDTLS_PLATFORM_GMTIME_R_ALT",                     Undefined),
     ("MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED",              Undefined),
+    ("MBEDTLS_ALLOW_PRIVATE_ACCESS",                      Defined),
 ];
 
 pub fn default_defines() -> HashMap<&'static str, Macro> {

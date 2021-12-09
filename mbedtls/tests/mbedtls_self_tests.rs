@@ -23,7 +23,7 @@ fn enable_self_test() {
     static START: Once = Once::new();
 
     let log_f;
-    
+
     cfg_if::cfg_if! {
         if #[cfg(feature = "std")] {
             log_f = None;
@@ -69,8 +69,6 @@ tests! {
     fn entropy,
     fn gcm,
     fn hmac_drbg,
-    fn md2,
-    fn md4,
     fn md5,
     fn mpi,
     fn pkcs5,
@@ -80,7 +78,6 @@ tests! {
     fn sha256,
     fn sha512,
     fn x509,
-    fn xtea,
     fn nist_kw,
     fn cmac,
 }

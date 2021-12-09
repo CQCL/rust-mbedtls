@@ -14,8 +14,6 @@ define!(
     #[derive(Copy, Clone, PartialEq, Debug)]
     enum Type {
         None = MD_NONE,
-        Md2 = MD_MD2,
-        Md4 = MD_MD4,
         Md5 = MD_MD5,
         Sha1 = MD_SHA1,
         Sha224 = MD_SHA224,
@@ -30,8 +28,6 @@ impl From<md_type_t> for Type {
     fn from(inner: md_type_t) -> Type {
         match inner {
             MD_NONE => Type::None,
-            MD_MD2 => Type::Md2,
-            MD_MD4 => Type::Md4,
             MD_MD5 => Type::Md5,
             MD_SHA1 => Type::Sha1,
             MD_SHA224 => Type::Sha224,
@@ -142,8 +138,9 @@ impl Md {
                 key.len(),
                 data.as_ptr(),
                 data.len(),
-                out.as_mut_ptr()
-            ).into_result()?;
+                out.as_mut_ptr(),
+            )
+            .into_result()?;
             Ok(olen)
         }
     }
@@ -172,7 +169,7 @@ pub fn pbkdf2_hmac(
             salt.len(),
             iterations,
             key.len() as u32,
-            key.as_mut_ptr()
+            key.as_mut_ptr(),
         )
         .into_result()?;
         Ok(())
