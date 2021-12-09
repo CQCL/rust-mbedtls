@@ -236,7 +236,7 @@ impl Pk {
     /// Takes both DER and PEM forms of PKCS#1 or PKCS#8 encoded keys.
     ///
     /// When calling on PEM-encoded data, `key` must be NULL-terminated
-    pub fn from_private_key(key: &[u8], password: Option<&[u8]>) -> Result<Pk> {
+    pub fn from_private_key<F: Random>(key: &[u8], password: Option<&[u8]>, rng: &mut F) -> Result<Pk> {
         let mut ret = Self::init();
         unsafe {
             pk_parse_key(
@@ -245,6 +245,8 @@ impl Pk {
                 key.len(),
                 password.map(<[_]>::as_ptr).unwrap_or(::core::ptr::null()),
                 password.map(<[_]>::len).unwrap_or(0),
+                Some(F::call),
+                rng.data_ptr(),
             )
             .into_result()?;
         };
@@ -407,8 +409,8 @@ impl Pk {
         }
     }
 
-    pub fn check_pair(public: &Self, private: &Self) -> bool {
-        unsafe { pk_check_pair(&public.inner, &private.inner) }
+    pub fn check_pair<F: Random>(public: &Self, private: &Self, rng: &mut F) -> bool {
+        unsafe { pk_check_pair(&public.inner, &private.inner, Some(F::call), rng.data_ptr()) }
             .into_result()
             .is_ok()
     }
@@ -851,6 +853,7 @@ impl Pk {
                 hash.as_ptr(),
                 hash.len(),
                 sig.as_mut_ptr(),
+                sig.len(),
                 &mut ret,
                 Some(F::call),
                 rng.data_ptr(),
@@ -890,6 +893,7 @@ impl Pk {
                     hash.as_ptr(),
                     hash.len(),
                     sig.as_mut_ptr(),
+                    sig.len(),
                     &mut ret,
                     Some(Rfc6979Rng::call_mut),
                     rng.data_ptr_mut(),

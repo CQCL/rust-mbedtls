@@ -123,12 +123,13 @@ impl<'a> Builder<'a> {
         Ok(self)
     }
 
-    pub fn extension(&mut self, oid: &[u8], val: &[u8]) -> Result<&mut Self> {
+    pub fn extension(&mut self, oid: &[u8], val: &[u8], critical: bool) -> Result<&mut Self> {
         unsafe {
             x509write_csr_set_extension(
                 &mut self.inner,
                 oid.as_ptr() as *const _,
                 oid.len(),
+                critical,
                 val.as_ptr(),
                 val.len()
             )
