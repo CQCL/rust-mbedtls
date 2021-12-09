@@ -96,7 +96,7 @@ impl Md {
 
     pub fn finish(mut self, out: &mut [u8]) -> Result<usize> {
         unsafe {
-            let olen = (*self.inner.md_info).size as usize;
+            let olen = md_get_size(self.inner.md_info) as usize;
             if out.len() < olen {
                 return Err(Error::MdBadInputData);
             }
@@ -112,7 +112,7 @@ impl Md {
         };
 
         unsafe {
-            let olen = mdinfo.inner.size as usize;
+            let olen = md_get_size(mdinfo.inner) as usize;
             if out.len() < olen {
                 return Err(Error::MdBadInputData);
             }
@@ -128,7 +128,7 @@ impl Md {
         };
 
         unsafe {
-            let olen = md.inner.size as usize;
+            let olen = md_get_size(md.inner) as usize;
             if out.len() < olen {
                 return Err(Error::MdBadInputData);
             }
