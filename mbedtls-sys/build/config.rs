@@ -84,8 +84,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_PLATFORM_SETUP_TEARDOWN_ALT",               Undefined),
     ("MBEDTLS_DEPRECATED_WARNING",                        Undefined),
     ("MBEDTLS_DEPRECATED_REMOVED",                        Undefined),
-    ("MBEDTLS_CHECK_PARAMS",                              Undefined),
-    ("MBEDTLS_CHECK_PARAMS_ASSERT",                       Undefined),
     ("MBEDTLS_TIMING_ALT",                                Undefined),
     ("MBEDTLS_AES_ALT",                                   Undefined),
     ("MBEDTLS_ARC4_ALT",                                  Undefined),
@@ -141,7 +139,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_ECP_DOUBLE_ADD_MXZ_ALT",                    Undefined),
     ("MBEDTLS_ECP_RANDOMIZE_MXZ_ALT",                     Undefined),
     ("MBEDTLS_ECP_NORMALIZE_MXZ_ALT",                     Undefined),
-    ("MBEDTLS_TEST_NULL_ENTROPY",                         Undefined),
     ("MBEDTLS_ENTROPY_HARDWARE_ALT",                      Undefined),
     ("MBEDTLS_AES_ROM_TABLES",                            Undefined),
     ("MBEDTLS_AES_FEWER_TABLES",                          Undefined),
@@ -174,7 +171,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_ECP_DP_CURVE25519_ENABLED",                 Defined),
     ("MBEDTLS_ECP_DP_CURVE448_ENABLED",                   Defined),
     ("MBEDTLS_ECP_NIST_OPTIM",                            Defined),
-    ("MBEDTLS_ECP_NO_INTERNAL_RNG",                       Undefined),
     ("MBEDTLS_ECP_RESTARTABLE",                           Undefined),
     ("MBEDTLS_ECDH_LEGACY_CONTEXT",                       Defined),
     ("MBEDTLS_ECDSA_DETERMINISTIC",                       Undefined),
@@ -212,9 +208,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_SELF_TEST",                                 Defined),
     ("MBEDTLS_SHA256_SMALLER",                            Undefined),
     ("MBEDTLS_SHA512_SMALLER",                            Undefined),
-    ("MBEDTLS_SHA512_NO_SHA384",                          Undefined),
     ("MBEDTLS_SSL_ALL_ALERT_MESSAGES",                    Defined),
-    ("MBEDTLS_SSL_RECORD_CHECKING",                       Defined),
     ("MBEDTLS_SSL_DTLS_CONNECTION_ID",                    Undefined),
     ("MBEDTLS_SSL_ASYNC_PRIVATE",                         Undefined),
     ("MBEDTLS_SSL_CONTEXT_SERIALIZATION",                 Defined),
@@ -227,7 +221,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_SSL_CBC_RECORD_SPLITTING",                  Undefined),
     ("MBEDTLS_SSL_RENEGOTIATION",                         Defined),
     ("MBEDTLS_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO",        Undefined),
-    ("MBEDTLS_SSL_SRV_RESPECT_CLIENT_PREFERENCE",         Undefined),
     ("MBEDTLS_SSL_MAX_FRAGMENT_LENGTH",                   Defined),
     ("MBEDTLS_SSL_PROTO_TLS1",                            Undefined),
     ("MBEDTLS_SSL_PROTO_TLS1_1",                          Undefined),
@@ -239,7 +232,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_SSL_DTLS_HELLO_VERIFY",                     Defined),
     ("MBEDTLS_SSL_DTLS_SRTP",                             Undefined),
     ("MBEDTLS_SSL_DTLS_CLIENT_PORT_REUSE",                Defined),
-    ("MBEDTLS_SSL_DTLS_BADMAC_LIMIT",                     Defined),
     ("MBEDTLS_SSL_SESSION_TICKETS",                       Defined),
     ("MBEDTLS_SSL_EXPORT_KEYS",                           Defined),
     ("MBEDTLS_SSL_SERVER_NAME_INDICATION",                Defined),
@@ -252,11 +244,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_USE_PSA_CRYPTO",                            Undefined),
     ("MBEDTLS_PSA_CRYPTO_CONFIG",                         Undefined),
     ("MBEDTLS_VERSION_FEATURES",                          Defined),
-    ("MBEDTLS_X509_ALLOW_EXTENSIONS_NON_V3",              Undefined),
-    ("MBEDTLS_X509_ALLOW_UNSUPPORTED_CRITICAL_EXTENSION", Undefined),
     ("MBEDTLS_X509_TRUSTED_CERTIFICATE_CALLBACK",         Undefined),
-    ("MBEDTLS_X509_CHECK_KEY_USAGE",                      Defined),
-    ("MBEDTLS_X509_CHECK_EXTENDED_KEY_USAGE",             Defined),
     ("MBEDTLS_X509_RSASSA_PSS_SUPPORT",                   Defined),
     ("MBEDTLS_AESNI_C",                                   Undefined),
     ("MBEDTLS_AES_C",                                     Defined),
@@ -314,6 +302,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_SHA1_C",                                    Defined),
     ("MBEDTLS_SHA224_C",                                  Defined),
     ("MBEDTLS_SHA256_C",                                  Defined),
+    ("MBEDTLS_SHA384_C",                                  Defined),
     ("MBEDTLS_SHA512_C",                                  Defined),
     ("MBEDTLS_SSL_CACHE_C",                               Defined),
     ("MBEDTLS_SSL_COOKIE_C",                              Defined),
@@ -376,22 +365,17 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_PSA_KEY_SLOT_COUNT",                        Undefined), // default: 32
     ("MBEDTLS_SSL_CACHE_DEFAULT_TIMEOUT",                 Undefined), // default: 86400
     ("MBEDTLS_SSL_CACHE_DEFAULT_MAX_ENTRIES",             Undefined), // default: 50
-    ("MBEDTLS_SSL_MAX_CONTENT_LEN",                       Undefined), // default: 16384
     ("MBEDTLS_SSL_IN_CONTENT_LEN",                        Undefined), // default: 16384
     ("MBEDTLS_SSL_CID_IN_LEN_MAX",                        Undefined), // default: 32
     ("MBEDTLS_SSL_CID_OUT_LEN_MAX",                       Undefined), // default: 32
-    ("MBEDTLS_SSL_CID_PADDING_GRANULARITY",               Undefined), // default: 16
-    ("MBEDTLS_SSL_TLS1_3_PADDING_GRANULARITY",            Undefined), // default: 1
+    ("MBEDTLS_SSL_CID_TLS1_3_PADDING_GRANULARITY",        Undefined), // default: 16
     ("MBEDTLS_SSL_OUT_CONTENT_LEN",                       Undefined), // default: 16384
     ("MBEDTLS_SSL_DTLS_MAX_BUFFERING",                    Undefined), // default: 32768
-    ("MBEDTLS_SSL_DEFAULT_TICKET_LIFETIME",               Undefined), // default: 86400
     ("MBEDTLS_PSK_MAX_LEN",                               Undefined), // default: 32
     ("MBEDTLS_SSL_COOKIE_TIMEOUT",                        Undefined), // default: 60
     ("MBEDTLS_SSL_CIPHERSUITES",                          Undefined), // default: no default
     ("MBEDTLS_X509_MAX_INTERMEDIATE_CA",                  Undefined), // default: 8
     ("MBEDTLS_X509_MAX_FILE_PATH_LEN",                    Undefined), // default: 512
-    ("MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_CERTIFICATES",    Undefined),
-    ("MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE",    Defined),
     ("MBEDTLS_PLATFORM_ZEROIZE_ALT",                      Undefined),
     ("MBEDTLS_PLATFORM_GMTIME_R_ALT",                     Undefined),
     ("MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED",              Undefined),
