@@ -243,8 +243,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_SSL_SESSION_TICKETS",                       Defined),
     ("MBEDTLS_SSL_EXPORT_KEYS",                           Defined),
     ("MBEDTLS_SSL_SERVER_NAME_INDICATION",                Defined),
-    ("MBEDTLS_SSL_TRUNCATED_HMAC",                        Defined),
-    ("MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT",                 Undefined),
     ("MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH",                Undefined),
     ("MBEDTLS_TEST_CONSTANT_FLOW_MEMSAN",                 Undefined),
     ("MBEDTLS_TEST_CONSTANT_FLOW_VALGRIND",               Undefined),
