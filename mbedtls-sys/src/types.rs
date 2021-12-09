@@ -104,6 +104,3 @@ cfg_if! {
 
 #[cfg(threading_component = "pthread")]
 pub use self::libc::pthread_mutex_t;
-
-#[cfg(feature = "pkcs11")]
-const ERROR: _PKCS11_NOT_SUPPORTED_ = ();

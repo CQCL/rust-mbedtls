@@ -88,7 +88,6 @@ pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "base64.h"),
     (None,                 "asn1write.h"),
     (None,                 "aria.h"),
-    (Some("pkcs11"),       "pkcs11.h"),
 ];
 
 pub fn enabled_ordered() -> Box<dyn Iterator<Item = &'static str>> {

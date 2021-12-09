@@ -102,7 +102,6 @@ This is a list of the Cargo features available for mbedtls-sys. Features in
                      result in faster code than letting the compiler apply mitigations
                      on assembly code.
 * **padlock** Enable support for VIA padlock.
-* *pkcs11* Enable PKCS#11 support. This requires pkcs11-helper to be installed.
 * **std** If this feature is not enabled, this crate is a no_std crate. In a
           no_std configuration without libc, you need to provide your own
           versions of the following standard C functions: `calloc()`/`free()`,
