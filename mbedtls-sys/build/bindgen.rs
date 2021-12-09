@@ -98,6 +98,10 @@ impl super::BuildConfig {
             cc.flag(cflag);
         }
 
+        // The mbedTLS headers include "private_access.h" before they include "mbedtls_config.h",
+        // so this can't just go in the config because it need to be defined before that.
+        cc.define("MBEDTLS_ALLOW_PRIVATE_ACCESS", Some(""));
+
         // Determine the sysroot for this compiler so that bindgen
         // uses the correct headers
         let compiler = cc.get_compiler();

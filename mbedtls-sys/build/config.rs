@@ -52,7 +52,7 @@ define_with_default = re.compile(r'.*#define (MBEDTLS_[A-Z0-9_]+) +([0-9A-Za-z_]
 def format(macro, state):
     return "    (\"%s\", %s)," % (macro, state.rjust(49 - len(macro) + len(state)))
 
-for line in open('vendor/include/mbedtls/config.h').readlines():
+for line in open('vendor/include/mbedtls/mbedtls_config.h').readlines():
     match = simple_define.match(line)
 
     if match:
@@ -379,7 +379,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_PLATFORM_ZEROIZE_ALT",                      Undefined),
     ("MBEDTLS_PLATFORM_GMTIME_R_ALT",                     Undefined),
     ("MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED",              Undefined),
-    ("MBEDTLS_ALLOW_PRIVATE_ACCESS",                      Defined),
 ];
 
 pub fn default_defines() -> HashMap<&'static str, Macro> {
