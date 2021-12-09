@@ -188,12 +188,6 @@ impl Config {
         self.ciphersuites.push(list);
     }
 
-    pub fn set_ciphersuites_for_version(&mut self, list: Arc<Vec<c_int>>, major: c_int, minor: c_int) {
-        Self::check_c_list(&list);
-        unsafe { ssl_conf_ciphersuites_for_version(self.into(), list.as_ptr(), major, minor) }
-        self.ciphersuites.push(list);
-    }
-
     pub fn set_curves(&mut self, list: Arc<Vec<ecp_group_id>>) {
         Self::check_c_list(&list);
         unsafe { ssl_conf_curves(self.into(), list.as_ptr()) }
