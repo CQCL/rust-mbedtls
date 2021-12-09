@@ -36,9 +36,6 @@ use crate::x509::VerifyError;
 #[allow(non_camel_case_types)]
 #[derive(Eq, PartialEq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Version {
-    Ssl3,
-    Tls1_0,
-    Tls1_1,
     Tls1_2,
     #[doc(hidden)]
     __NonExhaustive,
@@ -201,11 +198,8 @@ impl Config {
     
     pub fn set_min_version(&mut self, version: Version) -> Result<()> {
         let minor = match version {
-            Version::Ssl3 => 0,
-            Version::Tls1_0 => 1,
-            Version::Tls1_1 => 2,
             Version::Tls1_2 => 3,
-            _ => { return Err(Error::SslBadHsProtocolVersion); }
+            _ => { return Err(Error::SslBadProtocolVersion); }
         };
 
         unsafe { ssl_conf_min_version(self.into(), 3, minor) };
@@ -214,11 +208,8 @@ impl Config {
 
     pub fn set_max_version(&mut self, version: Version) -> Result<()> {
         let minor = match version {
-            Version::Ssl3 => 0,
-            Version::Tls1_0 => 1,
-            Version::Tls1_1 => 2,
             Version::Tls1_2 => 3,
-            _ => { return Err(Error::SslBadHsProtocolVersion); }
+            _ => { return Err(Error::SslBadProtocolVersion); }
         };
         unsafe { ssl_conf_max_version(self.into(), 3, minor) };
         Ok(())

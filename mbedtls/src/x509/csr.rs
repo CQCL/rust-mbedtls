@@ -129,7 +129,7 @@ impl<'a> Builder<'a> {
                 &mut self.inner,
                 oid.as_ptr() as *const _,
                 oid.len(),
-                critical,
+                critical as _,
                 val.as_ptr(),
                 val.len()
             )

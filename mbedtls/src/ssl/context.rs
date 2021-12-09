@@ -216,9 +216,6 @@ impl Context {
         assert_eq!(major, 3);
         let minor = self.minor_version();
         match minor {
-            0 => Version::Ssl3,
-            1 => Version::Tls1_0,
-            2 => Version::Tls1_1,
             3 => Version::Tls1_2,
             _ => unreachable!("unexpected TLS version")
         }
