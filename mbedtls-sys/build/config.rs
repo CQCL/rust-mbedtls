@@ -316,6 +316,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_RIPEMD160_C",                               Defined),
     ("MBEDTLS_RSA_C",                                     Defined),
     ("MBEDTLS_SHA1_C",                                    Defined),
+    ("MBEDTLS_SHA224_C",                                  Defined),
     ("MBEDTLS_SHA256_C",                                  Defined),
     ("MBEDTLS_SHA512_C",                                  Defined),
     ("MBEDTLS_SSL_CACHE_C",                               Defined),
