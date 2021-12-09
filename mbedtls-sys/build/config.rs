@@ -285,7 +285,6 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_ENTROPY_C",                                 Undefined),
     ("MBEDTLS_ERROR_C",                                   Defined),
     ("MBEDTLS_GCM_C",                                     Defined),
-    ("MBEDTLS_HAVEGE_C",                                  Undefined),
     ("MBEDTLS_HKDF_C",                                    Defined),
     ("MBEDTLS_HMAC_DRBG_C",                               Defined),
     ("MBEDTLS_NIST_KW_C",                                 Defined),
@@ -415,7 +414,6 @@ pub fn default_defines() -> HashMap<&'static str, Macro> {
 pub const FEATURE_DEFINES: &'static [(&'static str, CDefine)] = &[
     ("time",                  ("MBEDTLS_HAVE_TIME",                         Defined)),
     ("time",                  ("MBEDTLS_HAVE_TIME_DATE",                    Defined)),
-    ("havege",                ("MBEDTLS_HAVEGE_C",                          Defined)),
     ("threading",             ("MBEDTLS_THREADING_C",                       Defined)),
     ("pkcs11",                ("MBEDTLS_PKCS11_C",                          Defined)),
     ("debug",                 ("MBEDTLS_DEBUG_C",                           Defined)),

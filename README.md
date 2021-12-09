@@ -93,8 +93,6 @@ This is a list of the Cargo features available for mbedtls-sys. Features in
                   for the self tests. In a dependent crate, you must define the
                   `mbedtls_printf` function with the standard printf signature.
 * **debug** Enable debug callbacks.
-* *havege* Enable the Hardware Volatile Entropy Gathering and Expansion
-           (HAVEGE) algorithm.
 * **legacy_protocols** Enable support for SSLv3, TLSv1.0 and TLSv1.1
 * *mpi_force_c_code* MbedTLS uses assembly code for MPI functions, when available.
                      In some situations we may prefer C code instead. This is in

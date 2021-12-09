@@ -57,7 +57,6 @@ pub const ORDERED: &'static [(Option<&'static str>, &'static str)] = &[
     (None,                 "ecjpake.h"),
     (None,                 "psa_util.h"),
     (None,                 "net_sockets.h"),
-    (None,                 "havege.h"),
     (None,                 "poly1305.h"),
     (None,                 "chacha20.h"),
     (None,                 "xtea.h"),
