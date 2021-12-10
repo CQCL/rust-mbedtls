@@ -15,6 +15,7 @@ use crate::alloc_prelude::*;
 
 use crate::bignum::Mpi;
 use crate::pk::EcGroupId;
+use crate::rng::Random;
 
 define!(
     #[c_ty(ecp_group)]
@@ -313,7 +314,7 @@ impl EcPoint {
         }
     }
 
-    pub fn mul(&self, group: &mut EcGroup, k: &Mpi) -> Result<EcPoint> {
+    pub fn mul<F: Random>(&self, group: &mut EcGroup, k: &Mpi, rng: &mut F) -> Result<EcPoint> {
         // TODO provide random number generator for blinding
         // Note: mbedtls_ecp_mul performs point validation itself so we skip that here
 
@@ -325,8 +326,8 @@ impl EcPoint {
                 &mut ret.inner,
                 k.handle(),
                 &self.inner,
-                None,
-                ::core::ptr::null_mut(),
+                Some(F::call),
+                rng.data_ptr(),
             )
         }
         .into_result()?;
@@ -483,7 +484,7 @@ mod tests {
             for i in 0..32 {
                 k += i;
 
-                let pt = generator.mul(&mut group, &k).unwrap();
+                let pt = generator.mul(&mut group, &k, &mut crate::test_support::rand::test_rng()).unwrap();
 
                 let uncompressed_pt = pt.to_binary(&group, false).unwrap();
                 assert_eq!(uncompressed_pt.len(), 1 + p_len * 2);
@@ -513,7 +514,7 @@ mod tests {
         assert_eq!(g.is_zero().unwrap(), false);
 
         let k = Mpi::new(0xC3FF2).unwrap();
-        let pt = g.mul(&mut secp256k1, &k).unwrap();
+        let pt = g.mul(&mut secp256k1, &k, &mut crate::test_support::rand::test_rng()).unwrap();
 
         let pt_uncompressed = pt.to_binary(&secp256k1, false).unwrap();
         assert_eq!(pt_uncompressed.len(), 1 + 2 * (bitlen / 8));
@@ -639,7 +640,7 @@ mod tests {
         let d = Mpi::from_str("0x7A929ADE789BB9BE10ED359DD39A72C11B60961F49397EEE1D19CE9891EC3B28")
             .unwrap();
 
-        let pubkey = gost_g.mul(&mut gost, &d).unwrap();
+        let pubkey = gost_g.mul(&mut gost, &d,&mut crate::test_support::rand::test_rng()).unwrap();
 
         let pubkey_x = pubkey.x().unwrap();
         let pubkey_y = pubkey.y().unwrap();
@@ -657,7 +658,7 @@ mod tests {
         let k = Mpi::from_str("0x77105C9B20BCD3122823C8CF6FCC7B956DE33814E95B7FE64FED924594DCEAB3")
             .unwrap();
 
-        let gk = gost_g.mul(&mut gost, &k).unwrap();
+        let gk = gost_g.mul(&mut gost, &k, &mut crate::test_support::rand::test_rng()).unwrap();
 
         let exp_gk_x =
             Mpi::from_str("0x41AA28D2F1AB148280CD9ED56FEDA41974053554A42767B83AD043FD39DC0493");
@@ -722,14 +723,14 @@ mod tests {
         /*
         Basic sanity check - multiplying twice by k is same as multiply by k**2
          */
-        let pt1 = g.mul(&mut secp256r1, &k).unwrap();
+        let pt1 = g.mul(&mut secp256r1, &k, &mut crate::test_support::rand::test_rng()).unwrap();
         assert_eq!(pt1.is_zero().unwrap(), false);
 
-        let pt2 = g.mul(&mut secp256r1, &half_k).unwrap();
+        let pt2 = g.mul(&mut secp256r1, &half_k, &mut crate::test_support::rand::test_rng()).unwrap();
         assert_eq!(pt2.is_zero().unwrap(), false);
         assert_eq!(pt1.eq(&pt2).unwrap(), false);
 
-        let pt3 = pt2.mul(&mut secp256r1, &half_k).unwrap();
+        let pt3 = pt2.mul(&mut secp256r1, &half_k, &mut crate::test_support::rand::test_rng()).unwrap();
         assert_eq!(pt1.eq(&pt3).unwrap(), true);
         assert_eq!(pt3.eq(&pt1).unwrap(), true);
 

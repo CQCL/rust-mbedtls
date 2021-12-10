@@ -297,10 +297,10 @@ impl Pk {
         Ok(ret)
     }
 
-    pub fn private_from_ec_components(mut curve: EcGroup, private_key: Mpi) -> Result<Pk> {
+    pub fn private_from_ec_components<F: Random>(mut curve: EcGroup, private_key: Mpi, rng: &mut F) -> Result<Pk> {
         let mut ret = Self::init();
         let curve_generator = curve.generator()?;
-        let public_point = curve_generator.mul(&mut curve, &private_key)?;
+        let public_point = curve_generator.mul(&mut curve, &private_key, rng)?;
         unsafe {
             pk_setup(&mut ret.inner, pk_info_from_type(Type::Eckey.into())).into_result()?;
             let ctx = ret.inner.pk_ctx as *mut ecp_keypair;
@@ -1198,7 +1198,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
         assert_eq!(pem1, pem2);
 
         let mut key_from_components =
-            Pk::private_from_ec_components(secp256r1.clone(), key1.ec_private().unwrap()).unwrap();
+            Pk::private_from_ec_components(secp256r1.clone(), key1.ec_private().unwrap(), &mut crate::test_support::rand::test_rng()).unwrap();
         let pem3 = key_from_components.write_private_pem_string().unwrap();
 
         assert_eq!(pem3, pem2);
@@ -1224,7 +1224,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn parse_write_pem() {
-        let parsed = Pk::from_private_key(TEST_PEM.as_bytes(), None)
+        let parsed = Pk::from_private_key(TEST_PEM.as_bytes(), None, &mut crate::test_support::rand::test_rng())
             .unwrap()
             .write_private_pem_string()
             .unwrap();
@@ -1233,7 +1233,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn parse_write_der() {
-        let parsed = Pk::from_private_key(TEST_DER, None)
+        let parsed = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng())
             .unwrap()
             .write_private_der_vec()
             .unwrap();
@@ -1249,8 +1249,6 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
         let digests = [
             Type::None,
-            Type::Md2,
-            Type::Md4,
             Type::Md5,
             Type::Sha1,
             Type::Sha224,
@@ -1282,8 +1280,6 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
         let digests = [
             Type::None,
-            Type::Md2,
-            Type::Md4,
             Type::Md5,
             Type::Sha1,
             Type::Sha224,
@@ -1323,7 +1319,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn encrypt_v15_oaep() {
-        let mut pk = Pk::from_private_key(TEST_DER, None).unwrap();
+        let mut pk = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng()).unwrap();
         let mut cipher1 = [0u8; 2048 / 8];
         let mut cipher2 = [0u8; 2048 / 8];
         assert_eq!(
@@ -1346,7 +1342,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn encrypt_raw_decrypt_with_pkcs1_v15() {
-        let mut pk = Pk::from_private_key(TEST_DER, None).unwrap();
+        let mut pk = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng()).unwrap();
         let mut cipher = [0u8; 2048 / 8];
         let mut rng = crate::test_support::rand::test_rng();
         pk.set_options(Options::Rsa {
@@ -1373,7 +1369,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn rsa_encrypt_with_no_padding() {
-        let mut pk = Pk::from_private_key(TEST_DER, None).unwrap();
+        let mut pk = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng()).unwrap();
         let mut cipher = [0u8; 2048 / 8];
         // set raw decryption padding mode
         pk.set_options(Options::Rsa {
@@ -1388,7 +1384,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn rsa_encrypt_decrypt_with_label() {
-        let mut pk = Pk::from_private_key(TEST_DER, None).unwrap();
+        let mut pk = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng()).unwrap();
         let mut cipher = [0u8; 2048 / 8];
         // set raw decryption padding mode
         pk.set_options(Options::Rsa {
@@ -1457,7 +1453,7 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
 
     #[test]
     fn rsa_params() {
-        let pk = Pk::from_private_key(TEST_DER, None).unwrap();
+        let pk = Pk::from_private_key(TEST_DER, None, &mut crate::test_support::rand::test_rng()).unwrap();
 
         let n = pk.rsa_public_modulus().unwrap();
         let d = pk.rsa_private_exponent().unwrap();

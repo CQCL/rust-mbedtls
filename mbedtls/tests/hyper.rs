@@ -180,9 +180,14 @@ mod tests {
     use mbedtls::rng::{Rdrand};
 
     #[cfg(not(target_env = "sgx"))]
-    pub fn rng_new() -> Arc<CtrDrbg> {
+    pub fn arc_rng_new() -> Arc<CtrDrbg> {
+        Arc::new(rng_new())
+    }
+
+    #[cfg(not(target_env = "sgx"))]
+    pub fn rng_new() -> CtrDrbg {
         let entropy = Arc::new(OsEntropy::new());
-        let rng = Arc::new(CtrDrbg::new(entropy, None).unwrap());
+        let rng = CtrDrbg::new(entropy, None).unwrap();
         rng
     }
 
@@ -196,7 +201,7 @@ mod tests {
         let mut config = Config::new(Endpoint::Client, Transport::Stream, Preset::Default);
 
         config.set_authmode(AuthMode::None);
-        config.set_rng(rng_new());
+        config.set_rng(arc_rng_new());
         config.set_min_version(Version::Tls1_2).unwrap();
 
         let ssl = MbedSSLClient::new(Arc::new(config), false);
@@ -213,7 +218,7 @@ mod tests {
     fn test_multiple_request() {
         let mut config = Config::new(Endpoint::Client, Transport::Stream, Preset::Default);
 
-        config.set_rng(rng_new());
+        config.set_rng(arc_rng_new());
         config.set_authmode(AuthMode::None);
         config.set_min_version(Version::Tls1_2).unwrap();
         
@@ -238,7 +243,7 @@ mod tests {
         let mut config = Config::new(Endpoint::Client, Transport::Stream, Preset::Default);
 
         config.set_authmode(AuthMode::None);
-        config.set_rng(rng_new());
+        config.set_rng(arc_rng_new());
         config.set_min_version(Version::Tls1_2).unwrap();
         
         let ssl = MbedSSLClient::new(Arc::new(config), false);
@@ -265,7 +270,7 @@ mod tests {
         let mut config = Config::new(Endpoint::Client, Transport::Stream, Preset::Default);
 
         config.set_authmode(AuthMode::Required);
-        config.set_rng(rng_new());
+        config.set_rng(arc_rng_new());
         config.set_min_version(Version::Tls1_2).unwrap();
 
         let verify_callback = |_crt: &Certificate, _depth: i32, verify_flags: &mut VerifyError| {
@@ -299,13 +304,15 @@ mod tests {
 
         let mut config = Config::new(Endpoint::Server, Transport::Stream, Preset::Default);
 
-        config.set_rng(rng_new());
-        config.set_authmode(AuthMode::None);
-        config.set_min_version(Version::Tls1_2).unwrap();
+        let mut rng = rng_new();
 
         let cert = Arc::new(Certificate::from_pem_multiple(PEM_CERT).unwrap());
-        let key = Arc::new(Pk::from_private_key(PEM_KEY, None).unwrap());
+        let key = Arc::new(Pk::from_private_key(PEM_KEY, None, &mut rng).unwrap());
         config.push_cert(cert, key).unwrap();
+
+        config.set_rng(Arc::new(rng));
+        config.set_authmode(AuthMode::None);
+        config.set_min_version(Version::Tls1_2).unwrap();
         
         let ssl = MbedSSLServer { rc_config: Arc::new(config) };
 
@@ -324,7 +331,7 @@ mod tests {
         let mut config = Config::new(Endpoint::Client, Transport::Stream, Preset::Default);
 
         config.set_authmode(AuthMode::Required);
-        config.set_rng(rng_new());
+        config.set_rng(arc_rng_new());
         config.set_min_version(Version::Tls1_2).unwrap();
         config.set_ca_list(Arc::new(Certificate::from_pem_multiple(ROOT_CA_CERT).unwrap()), None);
         
@@ -352,17 +359,17 @@ mod tests {
             println!("{} {}:{} {}", level, file, line, message);
         };
 
-        let rng = rng_new();
+        let rng = arc_rng_new();
         
         let (local_addr, server) = {
             let mut config = Config::new(Endpoint::Server, Transport::Stream, Preset::Default);
 
+            let cert = Arc::new(Certificate::from_pem_multiple(PEM_CERT).unwrap());
+            let key = Arc::new(Pk::from_private_key(PEM_KEY, None, &mut rng_new()).unwrap());
+
             config.set_rng(rng.clone());
             config.set_min_version(Version::Tls1_2).unwrap();
             config.set_dbg_callback(dbg_callback.clone());
-
-            let cert = Arc::new(Certificate::from_pem_multiple(PEM_CERT).unwrap());
-            let key = Arc::new(Pk::from_private_key(PEM_KEY, None).unwrap());
 
             let cipher_suites : Vec<i32> = vec![RsaWithAes128GcmSha256.into(), DheRsaWithAes128GcmSha256.into(), PskWithAes128GcmSha256.into(), DhePskWithAes128GcmSha256.into(), RsaPskWithAes128GcmSha256.into(), 0];
 

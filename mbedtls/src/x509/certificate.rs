@@ -732,8 +732,8 @@ mod tests {
     impl Test {
         fn new() -> Self {
             Test {
-                key1: Pk::from_private_key(crate::test_support::keys::PEM_SELF_SIGNED_KEY, None).unwrap(),
-                key2: Pk::from_private_key(crate::test_support::keys::PEM_SELF_SIGNED_KEY, None).unwrap(),
+                key1: Pk::from_private_key(crate::test_support::keys::PEM_SELF_SIGNED_KEY, None, &mut crate::test_support::rand::test_rng()).unwrap(),
+                key2: Pk::from_private_key(crate::test_support::keys::PEM_SELF_SIGNED_KEY, None, &mut crate::test_support::rand::test_rng()).unwrap(),
             }
         }
 

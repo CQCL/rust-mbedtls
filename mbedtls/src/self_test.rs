@@ -98,14 +98,13 @@ pub unsafe fn disable() {
 /// MbedTLS function is called. See the module documentation for more
 /// information.
 pub use mbedtls_sys::{
-    aes_self_test as aes, aria_self_test as aria, base64_self_test as base64,
-    camellia_self_test as camellia, ccm_self_test as ccm,
+    aes_self_test as aes, base64_self_test as base64, camellia_self_test as camellia,
+    ccm_self_test as ccm, chacha20_self_test as chacha20, chachapoly_self_test as chachapoly,
     cmac_self_test as cmac, ctr_drbg_self_test as ctr_drbg, des_self_test as des,
     dhm_self_test as dhm, ecjpake_self_test as ecjpake, ecp_self_test as ecp,
     entropy_self_test as entropy, gcm_self_test as gcm, hmac_drbg_self_test as hmac_drbg,
-    chacha20_self_test as chacha20, chachapoly_self_test as chachapoly,
-    poly1305_self_test as poly1305, md5_self_test as md5, mpi_self_test as mpi,
-    nist_kw_self_test as nist_kw, pkcs5_self_test as pkcs5, ripemd160_self_test as ripemd160,
+    md5_self_test as md5, mpi_self_test as mpi, nist_kw_self_test as nist_kw,
+    pkcs5_self_test as pkcs5, poly1305_self_test as poly1305, ripemd160_self_test as ripemd160,
     rsa_self_test as rsa, sha1_self_test as sha1, sha256_self_test as sha256,
     sha512_self_test as sha512,
 };

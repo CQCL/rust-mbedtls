@@ -138,7 +138,7 @@ hXzA375dfGH6yIsRgRveMo6KDRK/AanSBLUj
             0xf7, 0xce, 0x3c, 0x78, 0x31, 0x24, 0xf6, 0xd5, 0x1c, 0xd0,
         ];
 
-        let mut k_pr = Pk::from_private_key(PRIVATE_P192, None).unwrap();
+        let mut k_pr = Pk::from_private_key(PRIVATE_P192, None, &mut crate::test_support::rand::test_rng()).unwrap();
         let k_pb = Pk::from_public_key(PUBLIC_P192).unwrap();
         let mut out = [0; 192 / 8];
         let len = k_pr

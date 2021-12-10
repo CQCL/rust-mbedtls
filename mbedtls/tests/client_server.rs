@@ -65,7 +65,7 @@ fn client(
             }
             Err(e) => {
                 match e {
-                    Error::SslBadHsProtocolVersion => {assert!(exp_version.is_none())},
+                    Error::SslBadProtocolVersion => {assert!(exp_version.is_none())},
                     Error::SslFatalAlertMessage => {},
                     e => panic!("Unexpected error {}", e),
                 };
@@ -89,11 +89,11 @@ fn server(
     exp_version: Option<Version>,
 ) -> TlsResult<()> {
     let entropy = entropy_new();
-    let rng = Arc::new(CtrDrbg::new(Arc::new(entropy), None)?);
+    let mut rng = CtrDrbg::new(Arc::new(entropy), None)?;
     let cert = Arc::new(Certificate::from_pem_multiple(keys::EXPIRED_CERT.as_bytes())?);
-    let key = Arc::new(Pk::from_private_key(keys::EXPIRED_KEY.as_bytes(), None)?);
+    let key = Arc::new(Pk::from_private_key(keys::EXPIRED_KEY.as_bytes(), None, &mut rng)?);
     let mut config = Config::new(Endpoint::Server, Transport::Stream, Preset::Default);
-    config.set_rng(rng);
+    config.set_rng(Arc::new(rng));
     config.set_min_version(min_version)?;
     config.set_max_version(max_version)?;
     config.push_cert(cert, key)?;
@@ -107,7 +107,7 @@ fn server(
             match e {
                 // client just closes connection instead of sending alert
                 Error::NetSendFailed => {assert!(exp_version.is_none())},
-                Error::SslBadHsProtocolVersion => {},
+                Error::SslBadProtocolVersion => {},
                 e => panic!("Unexpected error {}", e),
             };
             return Ok(());
@@ -147,14 +147,9 @@ mod test {
         }
 
         let test_configs = [
-            TestConfig::new(Version::Ssl3, Version::Ssl3, Version::Ssl3, Version::Ssl3, Some(Version::Ssl3)),
-            TestConfig::new(Version::Ssl3, Version::Tls1_2, Version::Ssl3, Version::Ssl3, Some(Version::Ssl3)),
-            TestConfig::new(Version::Tls1_0, Version::Tls1_0, Version::Tls1_0, Version::Tls1_0, Some(Version::Tls1_0)),
-            TestConfig::new(Version::Tls1_1, Version::Tls1_1, Version::Tls1_1, Version::Tls1_1, Some(Version::Tls1_1)),
+            // Supports for <TLS1.2 has been completely removed from mbedTLS, so we can't try any other
+            // versions here, but some additional cases will need to be added when TLS 1.3 support arrives
             TestConfig::new(Version::Tls1_2, Version::Tls1_2, Version::Tls1_2, Version::Tls1_2, Some(Version::Tls1_2)),
-            TestConfig::new(Version::Tls1_0, Version::Tls1_2, Version::Tls1_0, Version::Tls1_2, Some(Version::Tls1_2)),
-            TestConfig::new(Version::Tls1_2, Version::Tls1_2, Version::Tls1_0, Version::Tls1_2, Some(Version::Tls1_2)),
-            TestConfig::new(Version::Tls1_0, Version::Tls1_1, Version::Tls1_2, Version::Tls1_2, None)
         ];
 
         for config in &test_configs {

@@ -42,11 +42,11 @@ fn client<F>(conn: TcpStream, ca_callback: F) -> TlsResult<()>
 
 fn server(conn: TcpStream, cert: &[u8], key: &[u8]) -> TlsResult<()> {
     let entropy = entropy_new();
-    let rng = Arc::new(CtrDrbg::new(Arc::new(entropy), None)?);
+    let mut rng = CtrDrbg::new(Arc::new(entropy), None)?;
     let cert = Arc::new(Certificate::from_pem_multiple(cert)?);
-    let key = Arc::new(Pk::from_private_key(key, None)?);
+    let key = Arc::new(Pk::from_private_key(key, None, &mut rng)?);
     let mut config = Config::new(Endpoint::Server, Transport::Stream, Preset::Default);
-    config.set_rng(rng);
+    config.set_rng(Arc::new(rng));
     config.push_cert(cert, key)?;
     let mut ctx = Context::new(Arc::new(config));
 

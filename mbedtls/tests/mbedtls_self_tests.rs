@@ -58,28 +58,31 @@ macro_rules! tests {
 
 tests! {
     fn aes,
-    fn arc4,
     fn base64,
     fn camellia,
     fn ccm,
+    fn chacha20,
+    fn chachapoly,
+    fn cmac,
     fn ctr_drbg,
     fn des,
     fn dhm,
+    fn ecjpake,
+    fn ecp,
     #[cfg(all(feature="std", not(target_env="sgx")))]
     fn entropy,
     fn gcm,
     fn hmac_drbg,
     fn md5,
     fn mpi,
+    fn nist_kw,
     fn pkcs5,
+    fn poly1305,
     fn ripemd160,
     fn rsa,
     fn sha1,
     fn sha256,
     fn sha512,
-    fn x509,
-    fn nist_kw,
-    fn cmac,
 }
 
 // these can't run concurrently
