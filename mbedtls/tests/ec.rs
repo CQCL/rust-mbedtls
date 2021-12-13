@@ -44,19 +44,20 @@ wvkbR/h/+CNU1mMPdGoooNsldBtbNKgoAIsirMI/kk+q+9TTP4HqZpVt/qor/fz1
 
 #[test]
 fn sign_verify() {
-    let mut k = Pk::from_private_key(TEST_KEY_PEM.as_bytes(), None, &mut test_rng()).unwrap();
+    let mut rng = test_rng();
+    let mut k = Pk::from_private_key(TEST_KEY_PEM.as_bytes(), None, &mut rng).unwrap();
 
     let data = b"SIGNATURE TEST SIGNATURE TEST SI";
     let mut signature1 = [0u8; ECDSA_MAX_LEN];
     let mut signature2 = [0u8; ECDSA_MAX_LEN];
 
     let len = k
-        .sign(Sha256, data, &mut signature1, &mut test_rng())
+        .sign(Sha256, data, &mut signature1, &mut rng)
         .unwrap();
     k.verify(Sha256, data, &signature1[0..len]).unwrap();
 
     let len = k
-        .sign(Sha256, data, &mut signature2, &mut test_rng())
+        .sign(Sha256, data, &mut signature2, &mut rng)
         .unwrap();
     k.verify(Sha256, data, &signature2[0..len]).unwrap();
 
