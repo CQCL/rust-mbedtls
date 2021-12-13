@@ -67,8 +67,6 @@ tests! {
     fn ctr_drbg,
     fn des,
     fn dhm,
-    fn ecjpake,
-    fn ecp,
     #[cfg(all(feature="std", not(target_env="sgx")))]
     fn entropy,
     fn gcm,
