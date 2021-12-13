@@ -1042,7 +1042,7 @@ impl Pk {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hash::Type;
+    use crate::hash::{MdInfo, Type};
     use crate::pk::Type as PkType;
 
     // This is test data that must match library output *exactly*
@@ -1244,7 +1244,6 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
     fn rsa_sign_verify_pkcs1v15() {
         let mut pk =
             Pk::generate_rsa(&mut crate::test_support::rand::test_rng(), 2048, 0x10001).unwrap();
-        let data = b"SIGNATURE TEST SIGNATURE TEST SI";
         let mut signature = vec![0u8; (pk.len() + 7) / 8];
 
         let digests = [
@@ -1259,15 +1258,25 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
         ];
 
         for digest in &digests {
+            let data = if *digest == Type::None {
+                b"SIGNATURE TEST SIGNATURE TEST SI".to_vec()
+            } else {
+                let md_info: Option<MdInfo> = (*digest).into();
+                let mut data = vec![0u8; md_info.unwrap().size()];
+                crate::test_support::rand::test_rng().random(&mut data).unwrap();
+
+                data
+            };
+
             let len = pk
-                .sign(
-                    *digest,
-                    data,
-                    &mut signature,
-                    &mut crate::test_support::rand::test_rng(),
-                )
-                .unwrap();
-            pk.verify(*digest, data, &signature[0..len]).unwrap();
+                    .sign(
+                        *digest,
+                        &data,
+                        &mut signature,
+                        &mut crate::test_support::rand::test_rng(),
+                    )
+                    .unwrap();
+            pk.verify(*digest, &data, &signature[0..len]).unwrap();
         }
     }
 
@@ -1275,7 +1284,6 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
     fn rsa_sign_verify_pss() {
         let mut pk =
             Pk::generate_rsa(&mut crate::test_support::rand::test_rng(), 2048, 0x10001).unwrap();
-        let data = b"SIGNATURE TEST SIGNATURE TEST SI";
         let mut signature = vec![0u8; (pk.len() + 7) / 8];
 
         let digests = [
@@ -1295,6 +1303,8 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
             });
 
             if *digest == Type::None {
+                let data = b"SIGNATURE TEST SIGNATURE TEST SI";
+
                 assert!(pk
                     .sign(
                         *digest,
@@ -1304,15 +1314,19 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
                     )
                     .is_err());
             } else {
+                let md_info: Option<MdInfo> = (*digest).into();
+                let mut data = vec![0u8; md_info.unwrap().size()];
+                crate::test_support::rand::test_rng().random(&mut data).unwrap();
+
                 let len = pk
                     .sign(
                         *digest,
-                        data,
+                        &data,
                         &mut signature,
                         &mut crate::test_support::rand::test_rng(),
                     )
                     .unwrap();
-                pk.verify(*digest, data, &signature[0..len]).unwrap();
+                pk.verify(*digest, &data, &signature[0..len]).unwrap();
             }
         }
     }
