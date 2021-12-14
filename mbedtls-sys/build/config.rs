@@ -171,7 +171,7 @@ const DEFAULT_DEFINES: &'static [CDefine] = &[
     ("MBEDTLS_ECP_DP_CURVE25519_ENABLED",                 Defined),
     ("MBEDTLS_ECP_DP_CURVE448_ENABLED",                   Defined),
     ("MBEDTLS_ECP_NIST_OPTIM",                            Defined),
-    ("MBEDTLS_ECP_RESTARTABLE",                           Undefined),
+    ("MBEDTLS_ECP_RESTARTABLE",                           Defined),
     ("MBEDTLS_ECDH_LEGACY_CONTEXT",                       Defined),
     ("MBEDTLS_ECDSA_DETERMINISTIC",                       Undefined),
     ("MBEDTLS_KEY_EXCHANGE_PSK_ENABLED",                  Defined),
