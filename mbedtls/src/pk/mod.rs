@@ -10,8 +10,6 @@
 use crate::alloc_prelude::*;
 use mbedtls_sys::*;
 
-use mbedtls_sys::types::raw_types::c_void;
-
 use core::ptr;
 use core::convert::TryInto;
 use crate::error::{Error, IntoResult, Result};
@@ -96,46 +94,6 @@ struct CustomPkContext {
     pub pk: Vec<u8>,
     pub sk: Vec<u8>,
 }
-
-impl CustomPkContext {
-    fn new() -> CustomPkContext {
-        CustomPkContext {
-            algo_id: Vec::new(),
-            pk: Vec::new(),
-            sk: Vec::new(),
-        }
-    }
-}
-
-extern "C" fn alloc_custom_pk_ctx() -> *mut c_void {
-    let boxed = Box::new(CustomPkContext::new());
-    Box::into_raw(boxed) as *mut c_void
-}
-
-unsafe extern "C" fn free_custom_pk_ctx(p: *mut c_void) {
-    Box::from_raw(p as *mut CustomPkContext);
-}
-
-extern "C" fn custom_pk_can_do(_t: u32) -> i32 {
-    0
-}
-
-const CUSTOM_PK_INFO: pk_info_t = {
-    pk_info_t {
-        type_: CUSTOM_PK_TYPE,
-        can_do: Some(custom_pk_can_do),
-        check_pair_func: None,
-        debug_func: None,
-        encrypt_func: None,
-        decrypt_func: None,
-        sign_func: None,
-        verify_func: None,
-        get_bitlen: None,
-        name: b"\0" as *const u8 as *const _,
-        ctx_alloc_func: Some(alloc_custom_pk_ctx),
-        ctx_free_func: Some(free_custom_pk_ctx),
-    }
-};
 
 // If this changes then certificate.rs unsafe code in public_key needs to also change.
 define!(
@@ -318,29 +276,6 @@ impl Pk {
             let ctx = ret.inner.pk_ctx as *mut ecp_keypair;
             (*ctx).grp = curve.into_inner();
             (*ctx).Q = public_point.into_inner();
-        }
-        Ok(ret)
-    }
-
-    pub fn public_custom_algo(algo_id: &[u64], pk: &[u8]) -> Result<Pk> {
-        let mut ret = Self::init();
-        unsafe {
-            pk_setup(&mut ret.inner, &CUSTOM_PK_INFO).into_result()?;
-            let ctx = ret.inner.pk_ctx as *mut CustomPkContext;
-            (*ctx).algo_id = algo_id.to_owned();
-            (*ctx).pk = pk.to_owned();
-        }
-        Ok(ret)
-    }
-
-    pub fn private_custom_algo(algo_id: &[u64], pk: &[u8], sk: &[u8]) -> Result<Pk> {
-        let mut ret = Self::init();
-        unsafe {
-            pk_setup(&mut ret.inner, &CUSTOM_PK_INFO).into_result()?;
-            let ctx = ret.inner.pk_ctx as *mut CustomPkContext;
-            (*ctx).algo_id = algo_id.to_owned();
-            (*ctx).pk = pk.to_owned();
-            (*ctx).sk = sk.to_owned();
         }
         Ok(ret)
     }
@@ -1043,7 +978,6 @@ impl Pk {
 mod tests {
     use super::*;
     use crate::hash::{MdInfo, Type};
-    use crate::pk::Type as PkType;
 
     // This is test data that must match library output *exactly*
     const TEST_PEM: &'static str = "-----BEGIN RSA PRIVATE KEY-----
@@ -1487,27 +1421,4 @@ iy6KC991zzvaWY/Ys+q/84Afqa+0qJKQnPuy/7F5GkVdQA/lfbhi
         assert_eq!(&d % &q1, Ok(dq));
         assert_eq!((&qp * &q).unwrap().modulo(&p), Ok(one));
     }
-
-    #[test]
-    fn custom_pk_obj() {
-        let pk = Pk::public_custom_algo(&[8, 0, 2], &[1, 2, 3, 4]).unwrap();
-        assert_eq!(pk.pk_type(), PkType::Custom);
-        assert_eq!(pk.custom_algo_id().unwrap(), &[8, 0, 2]);
-        assert_eq!(pk.custom_public_key().unwrap(), &[1, 2, 3, 4]);
-        assert!(pk.custom_private_key().is_err());
-        assert!(!pk.can_do(PkType::Rsa));
-
-        let pk = Pk::private_custom_algo(&[23], &[1, 2, 3, 4], &[9, 1, 1]).unwrap();
-        assert_eq!(pk.pk_type(), PkType::Custom);
-        assert_eq!(pk.custom_algo_id().unwrap(), &[23]);
-        assert_eq!(pk.custom_public_key().unwrap(), &[1, 2, 3, 4]);
-        assert_eq!(pk.custom_private_key().unwrap(), &[9, 1, 1]);
-
-        // Verify custom_x functions don't crash if called on some other type
-        let pk = Pk::from_private_key(TEST_DER, None).unwrap();
-        assert!(pk.custom_algo_id().is_err());
-        assert!(pk.custom_public_key().is_err());
-        assert!(pk.custom_private_key().is_err());
-    }
-
 }
