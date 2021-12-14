@@ -133,6 +133,65 @@ define!(
     }
 );
 
+impl From<cipher_type_t> for CipherType {
+    fn from(inner: cipher_type_t) -> Self {
+        match inner {
+            CIPHER_NONE => CipherType::None,
+            CIPHER_NULL => CipherType::Null,
+            CIPHER_AES_128_ECB => CipherType::Aes128Ecb,
+            CIPHER_AES_192_ECB => CipherType::Aes192Ecb,
+            CIPHER_AES_256_ECB => CipherType::Aes256Ecb,
+            CIPHER_AES_128_CBC => CipherType::Aes128Cbc,
+            CIPHER_AES_192_CBC => CipherType::Aes192Cbc,
+            CIPHER_AES_256_CBC => CipherType::Aes256Cbc,
+            CIPHER_AES_128_CFB128 => CipherType::Aes128Cfb128,
+            CIPHER_AES_192_CFB128 => CipherType::Aes192Cfb128,
+            CIPHER_AES_256_CFB128 => CipherType::Aes256Cfb128,
+            CIPHER_AES_128_CTR => CipherType::Aes128Ctr,
+            CIPHER_AES_192_CTR => CipherType::Aes192Ctr,
+            CIPHER_AES_256_CTR => CipherType::Aes256Ctr,
+            CIPHER_AES_128_GCM => CipherType::Aes128Gcm,
+            CIPHER_AES_192_GCM => CipherType::Aes192Gcm,
+            CIPHER_AES_256_GCM => CipherType::Aes256Gcm,
+            CIPHER_CAMELLIA_128_ECB => CipherType::Camellia128Ecb,
+            CIPHER_CAMELLIA_192_ECB => CipherType::Camellia192Ecb,
+            CIPHER_CAMELLIA_256_ECB => CipherType::Camellia256Ecb,
+            CIPHER_CAMELLIA_128_CBC => CipherType::Camellia128Cbc,
+            CIPHER_CAMELLIA_192_CBC => CipherType::Camellia192Cbc,
+            CIPHER_CAMELLIA_256_CBC => CipherType::Camellia256Cbc,
+            CIPHER_CAMELLIA_128_CFB128 => CipherType::Camellia128Cfb128,
+            CIPHER_CAMELLIA_192_CFB128 => CipherType::Camellia192Cfb128,
+            CIPHER_CAMELLIA_256_CFB128 => CipherType::Camellia256Cfb128,
+            CIPHER_CAMELLIA_128_CTR => CipherType::Camellia128Ctr,
+            CIPHER_CAMELLIA_192_CTR => CipherType::Camellia192Ctr,
+            CIPHER_CAMELLIA_256_CTR => CipherType::Camellia256Ctr,
+            CIPHER_CAMELLIA_128_GCM => CipherType::Camellia128Gcm,
+            CIPHER_CAMELLIA_192_GCM => CipherType::Camellia192Gcm,
+            CIPHER_CAMELLIA_256_GCM => CipherType::Camellia256Gcm,
+            CIPHER_DES_ECB => CipherType::DesEcb,
+            CIPHER_DES_CBC => CipherType::DesCbc,
+            CIPHER_DES_EDE_ECB => CipherType::DesEdeEcb,
+            CIPHER_DES_EDE_CBC => CipherType::DesEdeCbc,
+            CIPHER_DES_EDE3_ECB => CipherType::DesEde3Ecb,
+            CIPHER_DES_EDE3_CBC => CipherType::DesEde3Cbc,
+            CIPHER_AES_128_CCM => CipherType::Aes128Ccm,
+            CIPHER_AES_192_CCM => CipherType::Aes192Ccm,
+            CIPHER_AES_256_CCM => CipherType::Aes256Ccm,
+            CIPHER_CAMELLIA_128_CCM => CipherType::Camellia128Ccm,
+            CIPHER_CAMELLIA_192_CCM => CipherType::Camellia192Ccm,
+            CIPHER_CAMELLIA_256_CCM => CipherType::Camellia256Ccm,
+            CIPHER_AES_128_KW => CipherType::Aes128Kw,
+            CIPHER_AES_192_KW => CipherType::Aes192Kw,
+            CIPHER_AES_256_KW => CipherType::Aes256Kw,
+            CIPHER_AES_128_KWP => CipherType::Aes128Kwp,
+            CIPHER_AES_192_KWP => CipherType::Aes192Kwp,
+            CIPHER_AES_256_KWP => CipherType::Aes256Kwp,
+            // This should be replaced with TryFrom once it is stable.
+            _ => panic!("Invalid cipher_mode_t"),
+        }
+    }
+}
+
 define!(
     #[c_ty(cipher_padding_t)]
     #[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
@@ -175,7 +234,23 @@ impl Cipher {
                 &mut ret.inner,
                 cipher_info_from_values(cipher_id.into(), key_bit_len as i32, cipher_mode.into()),
             )
-            .into_result()?;
+                .into_result()?;
+        }
+        Ok(ret)
+    }
+
+    // Setup routine - this should be the first function called
+    // it combines several steps into one call here, they are
+    // Cipher init, Cipher setup
+    pub fn setup_from_type(cipher_type: CipherType) -> Result<Cipher> {
+        let mut ret = Self::init();
+        unsafe {
+            // Do setup with proper cipher_info based on algorithm, key length and mode
+            cipher_setup(
+                &mut ret.inner,
+                cipher_info_from_type(cipher_type.into()),
+            )
+                .into_result()?;
         }
         Ok(ret)
     }

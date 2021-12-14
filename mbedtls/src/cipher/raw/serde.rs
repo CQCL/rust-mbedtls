@@ -34,7 +34,7 @@ enum SavedCipher {
 // Custom serialization in serde.rs to force encoding as sequence.
 #[derive(Deserialize)]
 pub struct SavedRawCipher {
-    cipher_id: cipher_id_t,
+    cipher_type: cipher_type_t,
     cipher_mode: cipher_mode_t,
     key_bit_len: u32,
     context: Bytes<cipher_context_t>,
@@ -73,9 +73,8 @@ impl<Op: Operation, T: Type> Serialize for Cipher<Op, T, CipherData> {
 }
 
 unsafe fn serialize_raw_cipher(mut cipher_context: cipher_context_t)
-    -> Result<SavedRawCipher, &'static str> {
-
-    let cipher_id = (*(*cipher_context.cipher_info).base).cipher;
+                               -> Result<SavedRawCipher, &'static str> {
+    let cipher_type = (*cipher_context.cipher_info).type_;
     let cipher_mode = (*cipher_context.cipher_info).mode;
     let key_bit_len = (*cipher_context.cipher_info).key_bitlen;
 
@@ -85,29 +84,37 @@ unsafe fn serialize_raw_cipher(mut cipher_context: cipher_context_t)
     // We only allow certain modes that we know have serialization-safe context
     // structures. If adding GCM/CCM support, be aware that they don't use the same
     // context types as the conventional modes.
-    let algorithm_ctx = match (cipher_id, cipher_mode) {
-        (CIPHER_ID_AES, MODE_CBC)
-        | (CIPHER_ID_AES, MODE_CTR)
-        | (CIPHER_ID_AES, MODE_OFB)
-        | (CIPHER_ID_AES, MODE_CFB)
-        | (CIPHER_ID_AES, MODE_ECB) => {
+    let algorithm_ctx = match cipher_type {
+        CIPHER_AES_128_ECB
+        | CIPHER_AES_192_ECB
+        | CIPHER_AES_256_ECB
+        | CIPHER_AES_128_CBC
+        | CIPHER_AES_192_CBC
+        | CIPHER_AES_256_CBC
+        | CIPHER_AES_128_CFB128
+        | CIPHER_AES_192_CFB128
+        | CIPHER_AES_256_CFB128
+        | CIPHER_AES_128_CTR
+        | CIPHER_AES_192_CTR
+        | CIPHER_AES_256_CTR
+        | CIPHER_AES_128_OFB
+        | CIPHER_AES_192_OFB
+        | CIPHER_AES_256_OFB => {
             let mut aes_context = *(cipher_context.cipher_ctx as *const aes_context);
             aes_context.rk = ::core::ptr::null_mut();
             AlgorithmContext::Aes(Bytes(aes_context))
         }
-        (CIPHER_ID_DES, MODE_CBC)
-        | (CIPHER_ID_DES, MODE_CTR)
-        | (CIPHER_ID_DES, MODE_OFB)
-        | (CIPHER_ID_DES, MODE_CFB) => {
+        CIPHER_DES_ECB |
+        CIPHER_DES_CBC => {
             AlgorithmContext::Des(Bytes(*(cipher_context.cipher_ctx as *const des_context)))
         }
-        (CIPHER_ID_3DES, MODE_CBC)
-        | (CIPHER_ID_3DES, MODE_CTR)
-        | (CIPHER_ID_3DES, MODE_OFB)
-        | (CIPHER_ID_3DES, MODE_CFB) => AlgorithmContext::Des3(Bytes(
+        CIPHER_DES_EDE3_ECB |
+        CIPHER_DES_EDE3_CBC => AlgorithmContext::Des3(Bytes(
             *(cipher_context.cipher_ctx as *const des3_context),
         )),
-        (CIPHER_ID_AES, MODE_GCM) => {
+        CIPHER_AES_128_GCM |
+        CIPHER_AES_192_GCM |
+        CIPHER_AES_256_GCM => {
             let gcm_context = *(cipher_context.cipher_ctx as *const gcm_context);
 
             let inner_ctx = gcm_context.cipher_ctx;
@@ -116,7 +123,7 @@ unsafe fn serialize_raw_cipher(mut cipher_context: cipher_context_t)
 
             AlgorithmContext::Gcm {
                 context: Bytes(gcm_context),
-                inner_cipher_ctx: Box::new(inner_saved_cipher)
+                inner_cipher_ctx: Box::new(inner_saved_cipher),
             }
         },
         _ => {
@@ -132,9 +139,9 @@ unsafe fn serialize_raw_cipher(mut cipher_context: cipher_context_t)
     cipher_context.get_padding = None;
 
     Ok(SavedRawCipher {
-        cipher_id: cipher_id,
-        cipher_mode: cipher_mode,
-        key_bit_len: key_bit_len,
+        cipher_type,
+        cipher_mode,
+        key_bit_len,
         context: Bytes(cipher_context),
         algorithm_ctx: algorithm_ctx,
     })
@@ -183,10 +190,8 @@ impl<'de, Op: Operation, T: Type> Deserialize<'de> for Cipher<Op, T, CipherData>
 unsafe fn deserialize_raw_cipher(raw: SavedRawCipher, padding: raw::CipherPadding)
     -> Result<raw::Cipher, (&'static str, &'static str)> {
 
-    let mut raw_cipher = match raw::Cipher::setup(
-        raw.cipher_id.into(),
-        raw.cipher_mode.into(),
-        raw.key_bit_len,
+    let mut raw_cipher = match raw::Cipher::setup_from_type(
+        raw.cipher_type.into(),
     ) {
         Ok(raw) => raw,
         Err(_) => {
@@ -202,8 +207,22 @@ unsafe fn deserialize_raw_cipher(raw: SavedRawCipher, padding: raw::CipherPaddin
 
     let cipher_context = &mut raw_cipher.inner;
 
-    match (raw.cipher_id, raw.algorithm_ctx) {
-        (CIPHER_ID_AES, AlgorithmContext::Aes(Bytes(aes_ctx))) => {
+    match (raw.cipher_type, raw.algorithm_ctx) {
+        (CIPHER_AES_128_ECB
+        | CIPHER_AES_192_ECB
+        | CIPHER_AES_256_ECB
+        | CIPHER_AES_128_CBC
+        | CIPHER_AES_192_CBC
+        | CIPHER_AES_256_CBC
+        | CIPHER_AES_128_CFB128
+        | CIPHER_AES_192_CFB128
+        | CIPHER_AES_256_CFB128
+        | CIPHER_AES_128_CTR
+        | CIPHER_AES_192_CTR
+        | CIPHER_AES_256_CTR
+        | CIPHER_AES_128_OFB
+        | CIPHER_AES_192_OFB
+        | CIPHER_AES_256_OFB, AlgorithmContext::Aes(Bytes(aes_ctx))) => {
             let ret_aes_ctx = cipher_context.cipher_ctx as *mut aes_context;
             *ret_aes_ctx = aes_ctx;
             // aes_ctx.rk needs to be a pointer to aes_ctx.buf, which holds the round keys.
@@ -211,13 +230,17 @@ unsafe fn deserialize_raw_cipher(raw: SavedRawCipher, padding: raw::CipherPaddin
             // mbedtls_aes_context in the mbedTLS source).
             (*ret_aes_ctx).rk = &mut (*ret_aes_ctx).buf[0];
         }
-        (CIPHER_ID_DES, AlgorithmContext::Des(Bytes(des_ctx))) => {
+        (CIPHER_DES_ECB |
+        CIPHER_DES_CBC, AlgorithmContext::Des(Bytes(des_ctx))) => {
             *(cipher_context.cipher_ctx as *mut des_context) = des_ctx
         }
-        (CIPHER_ID_3DES, AlgorithmContext::Des3(Bytes(des3_ctx))) => {
+        (CIPHER_DES_EDE3_ECB |
+        CIPHER_DES_EDE3_CBC, AlgorithmContext::Des3(Bytes(des3_ctx))) => {
             *(cipher_context.cipher_ctx as *mut des3_context) = des3_ctx
         }
-        (CIPHER_ID_AES, AlgorithmContext::Gcm {
+        (CIPHER_AES_128_GCM |
+        CIPHER_AES_192_GCM |
+        CIPHER_AES_256_GCM , AlgorithmContext::Gcm {
             context: Bytes(mut gcm_ctx),
             inner_cipher_ctx
         }) => {
@@ -250,7 +273,7 @@ impl Serialize for SavedRawCipher {
         S: Serializer,
     {
         let mut seq = s.serialize_seq(Some(5))?;
-        seq.serialize_element(&self.cipher_id)?;
+        seq.serialize_element(&self.cipher_type)?;
         seq.serialize_element(&self.cipher_mode)?;
         seq.serialize_element(&self.key_bit_len)?;
         seq.serialize_element(&self.context)?;
