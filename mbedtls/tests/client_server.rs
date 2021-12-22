@@ -159,7 +159,7 @@ mod test {
             let max_s = config.max_s;
             let exp_ver = config.exp_ver;
 
-            if (max_c < Version::Tls1_2 || max_s < Version::Tls1_2) && !cfg!(feature = "legacy_protocols") {
+            if max_c < Version::Tls1_2 || max_s < Version::Tls1_2 {
                 continue;
             }
 

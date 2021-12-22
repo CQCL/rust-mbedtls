@@ -41,7 +41,7 @@ quote = "1.0.9"
 # * strstr/strlen/strncpy/strncmp/strcmp/snprintf
 # * memmove/memcpy/memcmp/memset
 # * rand/printf (used only for self tests. optionally use custom_printf)
-default = ["std", "debug", "threading", "time", "aesni", "padlock", "legacy_protocols"]
+default = ["std", "debug", "threading", "time", "aesni", "padlock"]
 std = ["debug"] # deprecated automatic enabling of debug, can be removed on major version bump
 debug = []
 custom_printf = []
@@ -51,7 +51,6 @@ threading = []
 time = []
 aesni = []
 padlock = []
-legacy_protocols = []
 mpi_force_c_code = []
 trusted_cert_callback = []
 # deprecated, needed for backcompat, can be removed on major version bump

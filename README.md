@@ -29,7 +29,6 @@ This is a list of the Cargo features available for mbedtls. Features in
                         unsupported processors. On SGX, this feature is
                         enabled automatically.
 * *mpi_force_c_code* Enables the `mpi_force_c_code` feature in mbedtls-sys
-* *legacy_protocols* Enable support for SSLv3, TLSv1.0 and TLSv1.1
 * *no_std_deps* On no_std, you must enable this feature. It enables optional
                 dependencies needed on no_std. If the `std` feature is enabled,
                 this feature is ignored.
@@ -93,7 +92,6 @@ This is a list of the Cargo features available for mbedtls-sys. Features in
                   for the self tests. In a dependent crate, you must define the
                   `mbedtls_printf` function with the standard printf signature.
 * **debug** Enable debug callbacks.
-* **legacy_protocols** Enable support for SSLv3, TLSv1.0 and TLSv1.1
 * *mpi_force_c_code* MbedTLS uses assembly code for MPI functions, when available.
                      In some situations we may prefer C code instead. This is in
                      particular the case on x86 platforms where compile-time mitigation
