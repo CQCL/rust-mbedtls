@@ -36,6 +36,7 @@ use crate::pk::Pk;
 use crate::x509::Certificate;
 use crate::alloc::{Box as MbedtlsBox};
 use crate::Error as MbedtlsError;
+use crate::rng::Random;
 
 // Constants for various object identifiers used in PKCS12:
 
@@ -843,12 +844,12 @@ impl Pfx {
 
     /// Return the private keys stored in this Pfx along with a possibly empty list
     /// of "friendly names" which are associated with said private key.
-    pub fn private_keys<'a>(&'a self) -> impl Iterator<Item=(Result<Pk, crate::Error>, Vec<String>)> + 'a {
+    pub fn private_keys<'a, F: Random>(&'a self, rng: &'a mut F) -> impl Iterator<Item=(Result<Pk, crate::Error>, Vec<String>)> + 'a {
         self.authsafe_decrypted_contents()
             .filter_map(|sb|
                 match &sb.bag_value {
                     Pkcs12BagSet::Pkcs8(pkcs8) | Pkcs12BagSet::Key(KeyBag { pkcs8 }) =>
-                        Some((Pk::from_private_key(pkcs8, None), sb.friendly_name())),
+                        Some((Pk::from_private_key(pkcs8, None, rng), sb.friendly_name())),
                     _ => /* not a private key */ None
                 }
             )
